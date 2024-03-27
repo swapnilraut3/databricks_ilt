@@ -62,6 +62,20 @@ DESCRIBE EXTENDED sales;
 
 -- COMMAND ----------
 
+-- MAGIC %python
+-- MAGIC spark.sql('SELECT * FROM sales LIMIT 2').printSchema()
+
+-- COMMAND ----------
+
+-- MAGIC %python
+-- MAGIC spark.sql('SELECT * FROM sales LIMIT 2').show(20, False, vertical=True)
+
+-- COMMAND ----------
+
+DESCRIBE SCHEMA EXTENDED ${DA.schema_name};
+
+-- COMMAND ----------
+
 -- DBTITLE 0,--i18n-1d3d7f45-be4f-4459-92be-601e55ff0063
 -- MAGIC %md
 -- MAGIC
@@ -93,6 +107,31 @@ SELECT * FROM sales_unparsed;
 
 -- COMMAND ----------
 
+CREATE OR REPLACE TEMP VIEW sales_tmp_vw (
+  order_id LONG, 
+  email STRING,
+  transaction_timestamp LONG,
+  total_item_quantity INTEGER,
+  purchase_revenue_in_usd DOUBLE,
+  unique_items INTEGER,
+  items STRING
+  ) 
+  USING CSV
+  OPTIONS (
+    path = '${da.paths.datasets}/ecommerce/raw/sales-csv',
+    header = 'true',
+    delimiter = '|'
+  );
+
+-- We are not using replace here only CREATE is used
+CREATE TABLE sales_delta AS
+  SELECT * FROM sales_tmp_vw;
+
+SELECT * FROM sales_delta;
+
+-- COMMAND ----------
+
+-- Same code from databricks
 CREATE OR REPLACE TEMP VIEW sales_tmp_vw
   (order_id LONG, email STRING, transactions_timestamp LONG, total_item_quantity INTEGER, purchase_revenue_in_usd DOUBLE, unique_items INTEGER, items STRING)
 USING CSV
